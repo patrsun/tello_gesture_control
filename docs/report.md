@@ -64,7 +64,7 @@ The program is split up into effectively 2 parts:
 The detector class uses MediaPipe's [Hand Landmark Detection](https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker) to classify different gestures based on which of the 5 main fingers are up. For example, (1,1,1,1,1) would
 indicate an open hand, and (0,0,0,0,0) would indicate and closed fist.
 
-The main script is where the the drone is controlled, mapping each of gestures to a command that results in 
+The main script is where the drone is controlled, mapping each of gestures to a command that results in 
 the drone moving a certain direction. The gesture to command mapping was defined as follows:
 
 ```python
@@ -100,8 +100,8 @@ Using multi-processing to split up the main tello control worker and the detecti
 
 ## Further Research
 While we weren't able to make any progress on the WIFI probing project, all three of us believed that the idea
-would be very interesting to explore. Not only could this help with search in resucue with applications
-such as victim identification, but it also presents an opporunity for us to apply our networking knowledge 
+would be very interesting to explore. Not only could this help with search in rescue with applications
+such as victim identification, but it also presents an opportunity for us to apply our networking knowledge 
 from school. Further research with this topic would require a drone that is capable of acting as an access point
 and has the beaconing frames visible. 
 
