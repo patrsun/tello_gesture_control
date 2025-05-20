@@ -58,8 +58,8 @@ do similar things and thus made it much easier to learn how to implement gesture
 Much of the end result and code was written with reference to [Computer Vision with Tello](https://github.com/mrsojourn/computer_vision_with_tello_drone?tab=readme-ov-file), and so the overall logic of the program was not very difficult. 
 
 The program is split up into effectively 2 parts: 
-1. The detector class that uses mediapipe to classify hand gestures based on which fingers are up
-2. The main program that sends the commands to the tello based on which gestures are detected
+1. The detector class that uses mediapipe to classify hand gestures based on which fingers are up (hand_detector.py)
+2. The main program that sends the commands to the tello based on which gestures are detected (main.py)
 
 The detector class uses MediaPipe's [Hand Landmark Detection](https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker) to classify different gestures based on which of the 5 main fingers are up. For example, (1,1,1,1,1) would
 indicate an open hand, and (0,0,0,0,0) would indicate and closed fist.
