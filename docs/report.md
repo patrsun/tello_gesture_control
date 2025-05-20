@@ -45,7 +45,6 @@ An idea that would use YOLO to perform object detection and find specific object
 was more for a common pain point of losing items such as keys. However, because this required a degree of 
 drone autonomy that we couldn't quite figure out, we decided not to follow through with this.
 
-
 #### 4. Gesture Control
 There were a number of other ideas that we went through in addition to the ones above, but eventually, we settled on 
 gesture control because of how libraries such as [MediaPipe](https://github.com/google-ai-edge/mediapipe) exist
@@ -62,5 +61,49 @@ The program is split up into effectively 2 parts:
 1. The detector class that uses mediapipe to classify hand gestures based on which fingers are up
 2. The main program that sends the commands to the tello based on which gestures are detected
 
+The detector class uses MediaPipe's [Hand Landmark Detection](https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker) to classify different gestures based on which of the 5 main fingers are up. For example, (1,1,1,1,1) would
+indicate an open hand, and (0,0,0,0,0) would indicate and closed fist.
 
+The main script is where the the drone is controlled, mapping each of gestures to a command that results in 
+the drone moving a certain direction. The gesture to command mapping was defined as follows:
 
+```python
+(0,0,0,0,0): "stop",
+(0,1,0,0,0): "forward",
+(0,1,1,0,0): "backward",
+(1,0,0,0,0): "right",
+(0,0,0,0,1): "left",
+(0,1,0,0,1): "up",
+(1,0,0,0,1): "down",
+```
+
+## Demos:
+[![demo1](https://img.youtube.com/vi/vo5VW0NoR6s/0.jpg)](https://www.youtube.com/watch?v=vo5VW0NoR6s)
+
+[![demo2](https://img.youtube.com/vi/Q05GU-qtyo4/0.jpg)](https://www.youtube.com/watch?v=Q05GU-qtyo4)
+
+There were numerous iterations of this part of the project, but due to time constraints, many of these iterations
+with experimental features were not implemented. Some of the more interesting ones were:
+
+#### 1. Gesture Controlled Tracking
+Using a special gesture to toggle tracking mode on the drone which would make it follow your hand/face around.
+
+#### 2. Landing and Takeoff Gestures
+Self explanatory, but didn't work since the drone might accidentally classify movements in between gestures as 
+the landing gesture.
+
+There was also an issue with takeoff gesture where the program would freeze and the tello wouldn't execute the 
+command properly. 
+
+#### 3. Multi-Processing
+Using multi-processing to split up the main tello control worker and the detection worker.
+
+## Further Research
+While we weren't able to make any progress on the WIFI probing project, all three of us believed that the idea
+would be very interesting to explore. Not only could this help with search in resucue with applications
+such as victim identification, but it also presents an opporunity for us to apply our networking knowledge 
+from school. Further research with this topic would require a drone that is capable of acting as an access point
+and has the beaconing frames visible. 
+
+The drone object finder was also a project that I personally wanted to explore more since that involves drone 
+autonomy and machine learning. However, this would also likely require a drone more powerful than our tello.
