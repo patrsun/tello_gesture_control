@@ -1,11 +1,12 @@
-from djitellopy import Tello
 import time
+from djitellopy import Tello
 
 def drone_controller(queue):
     tello = Tello()
     tello.connect()
     print("Battery:", tello.get_battery())
     flying = False
+    rc = {"x": 0, "y": 0, "z": 0, "yaw": 0}
 
     while True:
         if not queue.empty():
@@ -15,24 +16,29 @@ def drone_controller(queue):
             if command == "takeoff" and not flying:
                 tello.takeoff()
                 flying = True
+
             elif command == "land" and flying:
                 tello.land()
                 flying = False
+
             elif flying:
                 if command == "forward":
-                    tello.move_forward(30)
+                    rc["x"] = 40
                 elif command == "backward":
-                    tello.move_back(30)
+                    rc["x"] = -40
                 elif command == "left":
-                    tello.move_left(30)
+                    rc["y"] = -40
                 elif command == "right":
-                    tello.move_right(30)
+                    rc["y"] = 40
                 elif command == "up":
-                    tello.move_up(30)
+                    rc["z"] = 40
                 elif command == "down":
-                    tello.move_down(30)
+                    rc["z"] = -40
                 elif command == "stop":
-                    tello.send_rc_control(0, 0, 0, 0)
+                    rc = {"x": 0, "y": 0, "z": 0, "yaw": 0}
+
+        if flying:
+            tello.send_rc_control(rc["y"], rc["x"], rc["z"], rc["yaw"])
 
         time.sleep(0.1)
 

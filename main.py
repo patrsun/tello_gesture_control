@@ -1,11 +1,10 @@
 import cv2
 import time
-from multiprocessing import Process, Queue
+from djitellopy import Tello
 from hand_detector import HandDetector
-from controller import drone_controller
 
+# Gesture to command map
 gesture_map = {
-    (1,1,1,1,1): "takeoff",
     (0,0,0,0,0): "stop",
     (0,1,0,0,0): "forward",
     (0,1,1,0,0): "backward",
@@ -13,46 +12,83 @@ gesture_map = {
     (0,0,0,0,1): "left",
     (0,1,0,0,1): "up",
     (1,0,0,0,1): "down",
-    (1,1,1,1,1): "land"
 }
 
+# Movement speed tuning
+x_speed = 20  # forward/backward speed
+y_speed = 20  # left/right speed
+z_speed = 40  # up/down speed  # left/right speed
+
 def main():
-    cap = cv2.VideoCapture(0)
+    tello = Tello()
+    tello.connect()
+    print("Battery:", tello.get_battery())
+
+    tello.streamon()
+    frame_read = tello.get_frame_read()
+
     detector = HandDetector()
-    queue = Queue()
-
-    # Start command process
-    command_proc = Process(target=drone_controller, args=(queue,))
-    command_proc.start()
-
-    lastGestureTime = 0
-    cooldown = 1.5
+    flying = False
+    rc = {"x": 0, "y": 0, "z": 0, "yaw": 0}
+    current_gesture = ""
 
     while True:
-        success, img = cap.read()
+        img = frame_read.frame
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         img = detector.findHands(img)
-        lmList, _ = detector.findPosition(img)
+        lmList, bbox = detector.findPosition(img)
+
+        # Default to stop motion
+        rc = {"x": 0, "y": 0, "z": 0, "yaw": 0}
+        current_gesture = ""
 
         if lmList:
             handType = detector.handType(lmList)
             fingers = detector.fingersUp(lmList, handType)
             gesture = gesture_map.get(tuple(fingers), None)
-            now = time.time()
+            current_gesture = gesture if gesture else "unknown"
 
-            if gesture and now - lastGestureTime > cooldown:
-                print("Gesture:", fingers, "→", gesture)
-                queue.put(gesture)
-                lastGestureTime = now
-                cv2.putText(img, gesture.upper(), (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 3)
+            if flying and gesture:
+                if gesture == "forward":
+                    rc["x"] = x_speed
+                elif gesture == "backward":
+                    rc["x"] = -x_speed
+                elif gesture == "right":
+                    rc["y"] = y_speed
+                elif gesture == "left":
+                    rc["y"] = -y_speed
+                elif gesture == "up":
+                    rc["z"] = z_speed
+                elif gesture == "down":
+                    rc["z"] = -z_speed
+                elif gesture == "stop":
+                    rc = {"x": 0, "y": 0, "z": 0, "yaw": 0}
+
+        if flying:
+            tello.send_rc_control(rc["y"], rc["x"], rc["z"], rc["yaw"])
+
+        # Draw gesture overlay
+        cv2.putText(img, f"Gesture: {current_gesture.upper()}", (10, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
         cv2.imshow("Tello Gesture Control", img)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            queue.put("land")
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'):
+            if flying:
+                tello.land()
             break
+        elif key == ord('t'):
+            if not flying:
+                tello.takeoff()
+                time.sleep(2)
+                flying = True
+        elif key == ord('l'):
+            if flying:
+                tello.land()
+                flying = False
 
-    cap.release()
+    tello.streamoff()
     cv2.destroyAllWindows()
-    command_proc.terminate()
 
 if __name__ == "__main__":
     main()
