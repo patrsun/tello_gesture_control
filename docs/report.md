@@ -95,8 +95,8 @@ the landing gesture.
 There was also an issue with takeoff gesture where the program would freeze and the tello wouldn't execute the 
 command properly. 
 
-#### 3. Multi-Processing
-Using multi-processing to split up the main tello control worker and the detection worker.
+#### 3. Multi-Threadgin
+Using multi-threading to split up the main tello control worker and the detection worker.
 
 ## Further Research
 While we weren't able to make any progress on the WIFI probing project, all three of us believed that the idea
